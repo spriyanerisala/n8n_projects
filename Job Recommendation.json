@@ -1,0 +1,288 @@
+{
+  "name": "Job Recommendation",
+  "nodes": [
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=User skills: {{$json[\"skills\"]}}\n\nSuggest 5 suitable job roles.\nReturn as comma-separated list.",
+        "options": {
+          "systemMessage": "You are a helpful assistant.\n"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        752,
+        752
+      ],
+      "id": "eb8c3d1c-48e3-42fc-8512-731e02d39697",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "model": "arcee-ai/trinity-large-preview:free",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [
+        832,
+        976
+      ],
+      "id": "609ab9c5-60bd-49f1-b986-9821dfb5ba2e",
+      "name": "OpenRouter Chat Model",
+      "credentials": {
+        "openRouterApi": {
+          "id": "JvAyVE87MQZJUVg1",
+          "name": "OpenRouter account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "tableId": "users",
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "name",
+              "fieldValue": "={{ $('Edit Fields').item.json.name }}"
+            },
+            {
+              "fieldId": "skills",
+              "fieldValue": "={{ $('Edit Fields').item.json.skills }}"
+            },
+            {
+              "fieldId": "recommended_jobs",
+              "fieldValue": "={{$node[\"AI Agent\"].json[\"output\"]}}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        1104,
+        864
+      ],
+      "id": "3362a91e-8fe8-429b-91cc-ed74a72c898b",
+      "name": "Create a row",
+      "credentials": {
+        "supabaseApi": {
+          "id": "qqeGPokVbid2wvZE",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "6536d2a8-5d18-4a99-ad6c-691b3c1c289a",
+              "name": "name",
+              "value": "={{ $json.name }}",
+              "type": "string"
+            },
+            {
+              "id": "d2670b50-6e36-4598-989b-90a48b7fdda7",
+              "name": "skills",
+              "value": "={{ $json.skills }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        528,
+        864
+      ],
+      "id": "d93d9d40-0723-4f33-b242-63337e9b3092",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "formTitle": "Job Recommendation",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "name"
+            },
+            {
+              "fieldLabel": "skills"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.5,
+      "position": [
+        304,
+        864
+      ],
+      "id": "716bca5c-838f-4b5a-b227-024560eba9d4",
+      "name": "On form submission",
+      "webhookId": "565aea4a-32ac-463a-b238-184fa9ae6159"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        304,
+        1184
+      ],
+      "id": "5752ee35-dfa7-4f3e-a319-f818e3d2d23b",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "tableId": "users"
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        528,
+        1184
+      ],
+      "id": "4fb1d824-f4c4-4f6d-a35a-69a5f8bcc8b6",
+      "name": "Get many rows",
+      "credentials": {
+        "supabaseApi": {
+          "id": "qqeGPokVbid2wvZE",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "https://docs.google.com/spreadsheets/d/1feJdK4Wofu8wMWat2RBZ5rx4dRTdyUtLCvX4xxhOU5A/edit?gid=0#gid=0",
+          "mode": "url"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1feJdK4Wofu8wMWat2RBZ5rx4dRTdyUtLCvX4xxhOU5A/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        752,
+        1184
+      ],
+      "id": "56e0327f-58e2-430a-88ef-340bb7d2d5ec",
+      "name": "Append row in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "Sm4SWPKUnIDPBUXO",
+          "name": "Google Sheets account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "OpenRouter Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Create a row",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create a row": {
+      "main": [
+        []
+      ]
+    },
+    "On form submission": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "Get many rows",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get many rows": {
+      "main": [
+        [
+          {
+            "node": "Append row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "73fa41a5-9576-4506-ba18-34e37f32eada",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "938ae7ff4c30418b95c98090b07ccdb9f1b0e64c4c82ecfd31dbf113fa317ece"
+  },
+  "id": "qE8DYToG7m9zTcKL",
+  "tags": []
+}

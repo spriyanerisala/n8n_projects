@@ -1,0 +1,386 @@
+{
+  "name": "code node",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        192
+      ],
+      "id": "ea999efe-9ce0-4242-9e58-32bfac7bc23b",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "jsCode": "const oldMembers = [\"Priya\", \"Ravi\", \"Sita\", \"Kiran\", \"Anu\"];\nconst newMembers = [\"Ramesh\", \"Divya\", \"Teja\", \"Nikhil\", \"Pooja\"];\n\nconst allMembers = [...oldMembers, ...newMembers];\n\nreturn allMembers.map((name, index) => {\n  return {\n    json: {\n      name: name,\n      myNewField: index + 1\n    }\n  };\n});"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        224,
+        0
+      ],
+      "id": "29b51f07-aa41-46f7-a01a-af5ec9d93d92",
+      "name": "names"
+    },
+    {
+      "parameters": {
+        "jsCode": "const oldMarks = [80, 70, 90, 60, 85];\nconst newMarks = [75, 88, 92, 67, 81];\n\nconst allMarks = [...oldMarks, ...newMarks];\n\nreturn allMarks.map((mark, index) => {\n  return {\n    json: {\n      marks: mark,\n      index: index + 1\n    }\n  };\n});"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        224,
+        192
+      ],
+      "id": "5fe07bec-a4b0-4a0f-830f-139d6a211526",
+      "name": "marks"
+    },
+    {
+      "parameters": {
+        "jsCode": "const oldIds = [101,102,103,104,105];\nconst newIds = [106,107,108,109,110];\n\nconst allIds = [...oldIds, ...newIds];\n\nreturn allIds.map((idno, index) => {\n  return {\n    json: {\n      id: idno,\n      index: index + 1\n    }\n  };\n});"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        224,
+        384
+      ],
+      "id": "57b1c842-cd9b-45e6-9770-6e0a8f96c3fa",
+      "name": "ids"
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineByPosition",
+        "numberInputs": 3,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        448,
+        176
+      ],
+      "id": "757fd983-8df7-484b-8273-a6a5028c4346",
+      "name": "(name + marks + id)"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "faba0bb8-ff14-4ebb-9244-d920a1306213",
+              "leftValue": "={{ $('marks').item.json.marks }}",
+              "rightValue": 80,
+              "operator": {
+                "type": "number",
+                "operation": "gte"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2.3,
+      "position": [
+        672,
+        192
+      ],
+      "id": "d93016cc-bae8-4ca4-99d9-8e8061c54560",
+      "name": ">=80"
+    },
+    {
+      "parameters": {
+        "sendTo": "nspriya005@gmail.com",
+        "subject": "Selection Results",
+        "message": "={{ $json.name }}\nCongratulations!\nYou are selected...",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        1344,
+        96
+      ],
+      "id": "070bb2f8-9ba8-48c3-93f7-b0a07c9ee537",
+      "name": "selected email",
+      "webhookId": "bb720d7f-d3ed-4a4e-aa04-63f496d881cc",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "7OCSiHpj9XMVTKiE",
+          "name": "Gmail account 3"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "aggregate": "aggregateAllItemData",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        896,
+        192
+      ],
+      "id": "021429f5-dd37-412a-9644-abfc9a898a98",
+      "name": "Aggregate"
+    },
+    {
+      "parameters": {
+        "jsCode": "const data=$input.first().json.data;\ndata.sort((a,b)=>b.marks-a.marks);\nconst top3=data.slice(0,3);\nreturn top3.map(item=>({json:item}))"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1120,
+        192
+      ],
+      "id": "4461f631-34c2-4dfb-93e8-366a84fe7eeb",
+      "name": "Top3"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "https://docs.google.com/spreadsheets/d/1gI1tc1ePsJwVyk-MuCGzDURZh4h4GR4yfgrx5u613no/edit?gid=0#gid=0",
+          "mode": "url"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "Sheet1",
+          "mode": "name"
+        },
+        "columns": {
+          "mappingMode": "autoMapInputData",
+          "value": {},
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "Name",
+              "displayName": "Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Marks",
+              "displayName": "Marks",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "name",
+              "displayName": "name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "myNewField",
+              "displayName": "myNewField",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "marks",
+              "displayName": "marks",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "index",
+              "displayName": "index",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1344,
+        288
+      ],
+      "id": "2b0945e6-afc1-4495-847b-b9d95016801d",
+      "name": "Append row in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "Sm4SWPKUnIDPBUXO",
+          "name": "Google Sheets account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "names",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "marks",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "ids",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "names": {
+      "main": [
+        [
+          {
+            "node": "(name + marks + id)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "marks": {
+      "main": [
+        [
+          {
+            "node": "(name + marks + id)",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "ids": {
+      "main": [
+        [
+          {
+            "node": "(name + marks + id)",
+            "type": "main",
+            "index": 2
+          }
+        ]
+      ]
+    },
+    "(name + marks + id)": {
+      "main": [
+        [
+          {
+            "node": ">=80",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    ">=80": {
+      "main": [
+        [
+          {
+            "node": "Aggregate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aggregate": {
+      "main": [
+        [
+          {
+            "node": "Top3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Top3": {
+      "main": [
+        [
+          {
+            "node": "selected email",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Append row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "selected email": {
+      "main": [
+        []
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "8586be69-6643-453c-ad92-c49b02fa3097",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "938ae7ff4c30418b95c98090b07ccdb9f1b0e64c4c82ecfd31dbf113fa317ece"
+  },
+  "id": "ZUfPwTnAkRjl8U3c",
+  "tags": []
+}

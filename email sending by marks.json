@@ -1,0 +1,457 @@
+{
+  "name": "email sending by marks",
+  "nodes": [
+    {
+      "parameters": {
+        "formTitle": "Enter Your Marks",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "Name"
+            },
+            {
+              "fieldLabel": "Gender"
+            },
+            {
+              "fieldLabel": "Email",
+              "fieldType": "email"
+            },
+            {
+              "fieldLabel": "Maths",
+              "fieldType": "number"
+            },
+            {
+              "fieldLabel": "Physics",
+              "fieldType": "number"
+            },
+            {
+              "fieldLabel": "Chemistry",
+              "fieldType": "number"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.5,
+      "position": [
+        -480,
+        112
+      ],
+      "id": "43024fb5-7330-4ce6-a2bc-5cd7831f2411",
+      "name": "On form submission",
+      "webhookId": "583f8aed-6ac3-4f2e-b6d2-01ae2abd15fe"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "0bcded3c-1d10-40b7-b8e0-b14ac699a9dc",
+              "name": "Total",
+              "value": "={{ $json.Physics + $json.Maths + $json.Chemistry }}",
+              "type": "number"
+            },
+            {
+              "id": "83944864-4df6-491c-ae09-4048e8a8cde4",
+              "name": "Gender",
+              "value": "={{ $json.Gender === \"Female\" ? \"Ms\" : \"Mr\" }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -256,
+        112
+      ],
+      "id": "66773328-a6c0-492d-a594-9fdca3b2c3d3",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.Total }}",
+                    "rightValue": 40,
+                    "operator": {
+                      "type": "number",
+                      "operation": "lt"
+                    },
+                    "id": "4f470514-cfaa-4ab5-b7ab-f7e5006d52bf"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "=Your marks are {{ $json.Total }} in the exam.\nYou  are Failed! \n"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "ef279df3-dd55-4989-8a90-abaee2d0abdf",
+                    "leftValue": "={{ $json.Total }}",
+                    "rightValue": 270,
+                    "operator": {
+                      "type": "number",
+                      "operation": "gt"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "=Your marks are {{ $json.Total }} in the exam.  \nCongratulations!,You are the top  {{ 300 - $json.Total }} place."
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "75e3ce48-91d9-4be5-919c-e7f94c50900b",
+                    "leftValue": "={{ $json.Total }}",
+                    "rightValue": 250,
+                    "operator": {
+                      "type": "number",
+                      "operation": "gt"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "=Your marks are {{ $json.Total }} in the exam. You  are Very Good ! "
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "9ab1299e-1780-4ead-9b68-209d0302d637",
+                    "leftValue": "={{ $json.Total }}",
+                    "rightValue": 200,
+                    "operator": {
+                      "type": "number",
+                      "operation": "gt"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "=Your marks are {{ $json.Total }} in the exam. You  are Nice ! "
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "434a199a-6363-4098-b323-14a1a9331610",
+                    "leftValue": "={{ $json.Total }}",
+                    "rightValue": 100,
+                    "operator": {
+                      "type": "number",
+                      "operation": "gt"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "=Your marks are {{ $json.Total }} in the exam. You  are Better,Do practice well ! "
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "5a51cffa-b57f-4389-9882-d78c35029045",
+                    "leftValue": "={{ $json.Total }}",
+                    "rightValue": 40,
+                    "operator": {
+                      "type": "number",
+                      "operation": "gt"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "=Your marks are {{ $json.Total }} in the exam. You  are Passed! "
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        -32,
+        48
+      ],
+      "id": "e189e98d-70d8-46ee-879e-6b82176cdd44",
+      "name": "Switch"
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $('On form submission').item.json.Email }}",
+        "subject": "Your Marks !!!",
+        "message": "={{ $('Edit Fields').item.json.Gender }} {{ $('On form submission').item.json.Name }},\n\nYou have obtained  {{ $('Edit Fields').item.json.Total }} out of 300\n\nSry!\nYou are failed in the exam.",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        192,
+        -368
+      ],
+      "id": "6ccb1b5b-eaad-484b-a9be-9e72e132d650",
+      "name": "<40",
+      "webhookId": "34902c61-4300-4a43-9926-327d6f269672",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "7OCSiHpj9XMVTKiE",
+          "name": "Gmail account 3"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $('On form submission').item.json.Email }}",
+        "subject": "Your Marks !!!",
+        "message": "={{ $('Edit Fields').item.json.Gender }} {{ $('On form submission').item.json.Name }},\n\nYou have obtained  {{ $('Edit Fields').item.json.Total }} out of 300\n\nYou have passed the exam.\nDo hardwork to get improve in your marks\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        192,
+        400
+      ],
+      "id": "bf32a523-1a81-4ce3-9cff-4f9a2d6472c6",
+      "name": ">100",
+      "webhookId": "34902c61-4300-4a43-9926-327d6f269672",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "7OCSiHpj9XMVTKiE",
+          "name": "Gmail account 3"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $('On form submission').item.json.Email }}",
+        "subject": "Your Marks !!!",
+        "message": "={{ $('Edit Fields').item.json.Gender }} {{ $('On form submission').item.json.Name }},\n\nYou have obtained  {{ $('Edit Fields').item.json.Total }} out of 300\n\nYou have passed the exam.\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        192,
+        592
+      ],
+      "id": "aaab6e16-013a-4220-a528-14a571ef17f8",
+      "name": ">40",
+      "webhookId": "34902c61-4300-4a43-9926-327d6f269672",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "7OCSiHpj9XMVTKiE",
+          "name": "Gmail account 3"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $('On form submission').item.json.Email }}",
+        "subject": "Your Marks !!!",
+        "message": "={{ $('Edit Fields').item.json.Gender }} {{ $('On form submission').item.json.Name }},\n\nYou have obtained  {{ $('Edit Fields').item.json.Total }} out of 300\n\nYou have passed the exam.\nWell prepared !",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        192,
+        208
+      ],
+      "id": "88166b56-4aa8-4cca-b476-c5818dd697a8",
+      "name": ">200",
+      "webhookId": "34902c61-4300-4a43-9926-327d6f269672",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "7OCSiHpj9XMVTKiE",
+          "name": "Gmail account 3"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $('On form submission').item.json.Email }}",
+        "subject": "Your Marks !!!",
+        "message": "={{ $('Edit Fields').item.json.Gender }} {{ $('On form submission').item.json.Name }},\n\nYou have obtained  {{ $('Edit Fields').item.json.Total }} out of 300\n\nYou have passed the exam.\nNice ,Keep it up.",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        192,
+        16
+      ],
+      "id": "b93220c1-98a9-480e-8eae-dfb59c4e5448",
+      "name": ">250",
+      "webhookId": "34902c61-4300-4a43-9926-327d6f269672",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "7OCSiHpj9XMVTKiE",
+          "name": "Gmail account 3"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $('On form submission').item.json.Email }}",
+        "subject": "Your Marks !!!",
+        "message": "={{ $('Edit Fields').item.json.Gender }} {{ $('On form submission').item.json.Name }},\n\nYou have obtained  {{ $('Edit Fields').item.json.Total }} out of 300\n\nYou have passed the exam.\n\nand your are  top {{ 300 - $('Edit Fields').item.json.Total }} .\nKeep it up!\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        192,
+        -176
+      ],
+      "id": "6a2fdf62-29bc-436a-a245-de327ef3b5fc",
+      "name": ">270",
+      "webhookId": "34902c61-4300-4a43-9926-327d6f269672",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "7OCSiHpj9XMVTKiE",
+          "name": "Gmail account 3"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "On form submission": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "<40",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": ">270",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": ">250",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": ">200",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": ">100",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": ">40",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "9d66301d-96ba-4cc6-9b5d-1e0b194fb98e",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "938ae7ff4c30418b95c98090b07ccdb9f1b0e64c4c82ecfd31dbf113fa317ece"
+  },
+  "id": "JrAb0WD8IGBlDgBj",
+  "tags": []
+}

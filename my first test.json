@@ -1,0 +1,221 @@
+{
+  "name": "my first test",
+  "nodes": [
+    {
+      "parameters": {
+        "formTitle": "Sholarship Eligibility",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "First Name",
+              "placeholder": "Enter yout first name",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Enter your last Name",
+              "placeholder": "Enter your Last Name"
+            },
+            {
+              "fieldLabel": "Enter your email",
+              "fieldType": "email",
+              "placeholder": "Enter your Email",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Enter your Percentage",
+              "fieldType": "number",
+              "placeholder": "Percentage",
+              "requiredField": true
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.5,
+      "position": [
+        0,
+        0
+      ],
+      "id": "5be75693-8aeb-43d7-af4c-e9e5fe2faa84",
+      "name": "On form submission",
+      "webhookId": "d2a9a784-fc20-464e-b3e4-3ee5a51f6758"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "16692c3c-744a-4e39-82c7-52c40dac8004",
+              "name": "First Name",
+              "value": "={{ $json['Enter your last Name'] }} {{ $json['First Name'] }}",
+              "type": "string"
+            },
+            {
+              "id": "ddeaffa7-fef7-4025-89c7-83fde8153dac",
+              "name": "Enter your email",
+              "value": "={{ $json['Enter your email'] }}",
+              "type": "string"
+            },
+            {
+              "id": "7d45249c-b025-4860-ac71-26a06f55bab4",
+              "name": "Enter your Percentage",
+              "value": "={{ $json['Enter your Percentage'] }}",
+              "type": "number"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        208,
+        0
+      ],
+      "id": "91e2f725-03bc-49d1-a616-184800e4bb4b",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "75dc29bb-4c3c-4d5c-9d5d-4f88020fdf45",
+              "leftValue": "={{ $json['Enter your Percentage'] }}",
+              "rightValue": 80,
+              "operator": {
+                "type": "number",
+                "operation": "gt"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        416,
+        0
+      ],
+      "id": "393cdaf3-a88b-41c6-a2b1-de61f59ccc3b",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $json['Enter your email'] }}",
+        "subject": "Eligibility Status : ",
+        "message": "={{ $json['First Name'] }},your percentage is {{ $json['Enter your Percentage'] }}%.\n\nYou are eligible for Scholarship",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        624,
+        -96
+      ],
+      "id": "beef980e-3bd1-49e2-be6b-8c99818a07c6",
+      "name": "Send a message",
+      "webhookId": "99a3927c-6dbe-4d1e-903a-c6b35c1cc3f6",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "7OCSiHpj9XMVTKiE",
+          "name": "Gmail account 3"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $json['Enter your email'] }}",
+        "subject": "Eligibility Status : ",
+        "message": "=Soryy! ,{{ $json['First Name'] }},your percentage is {{ $json['Enter your Percentage'] }}%.\n\nYou are  not eligible for Scholarship",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        656,
+        64
+      ],
+      "id": "8a7bfbb0-33fd-4116-a254-f3c08747f1d0",
+      "name": "Send a message1",
+      "webhookId": "99a3927c-6dbe-4d1e-903a-c6b35c1cc3f6",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "7OCSiHpj9XMVTKiE",
+          "name": "Gmail account 3"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "On form submission": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Send a message1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "f425d5ff-4bd8-4e93-923b-50f3801a46f8",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "938ae7ff4c30418b95c98090b07ccdb9f1b0e64c4c82ecfd31dbf113fa317ece"
+  },
+  "id": "wmsEW6OWtLZyn8UU",
+  "tags": [
+    {
+      "updatedAt": "2026-04-08T14:04:47.534Z",
+      "createdAt": "2026-04-08T14:04:47.534Z",
+      "id": "KgqJsiabQJULsT4f",
+      "name": "practice"
+    }
+  ]
+}
