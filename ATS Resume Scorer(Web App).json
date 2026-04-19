@@ -1,0 +1,198 @@
+{
+  "name": "ATS Resume Scorer",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "analyze-resume",
+        "responseMode": "responseNode",
+        "options": {
+          "allowedOrigins": "*"
+        }
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "d5d50b60-4175-433c-a1d5-f4c737d156c3",
+      "name": "Webhook",
+      "webhookId": "baeba959-3a88-4a9f-86b8-ca233b7c3fe3"
+    },
+    {
+      "parameters": {
+        "model": "openai/gpt-oss-120b:free",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [
+        296,
+        224
+      ],
+      "id": "82b463b2-fed5-4ee9-bd78-f5205a65f864",
+      "name": "OpenRouter Chat Model",
+      "credentials": {
+        "openRouterApi": {
+          "id": "JvAyVE87MQZJUVg1",
+          "name": "OpenRouter account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ $('AI Agent').item.json.output }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        1024,
+        0
+      ],
+      "id": "ce6b4458-9ad7-4035-8779-793a4e611676",
+      "name": "Respond to Webhook"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=RESUME: {{ $json.body.resume_text }}\nJOB DESCRIPTION: {{ $json.body.job_description }}",
+        "options": {
+          "systemMessage": "You are an expert ATS resume analyzer.\nALWAYS return ONLY valid JSON, no extra text.\n\nReturn exactly:\n{\n  \"score\": <0-100>,\n  \"keyword_match\": <0-100>,\n  \"format_score\": <0-100>,\n  \"experience_match\": <0-100>,\n  \"missing_keywords\": [\"kw1\", \"kw2\"],\n  \"strengths\": [\"s1\", \"s2\"],\n  \"improvements\": [\"i1\", \"i2\"],\n  \"summary\": \"2-3 line feedback\"\n}"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        224,
+        0
+      ],
+      "id": "7f2126af-0d42-4195-a903-74982efb7f4a",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "tableId": "resume_scans",
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "resume_text",
+              "fieldValue": "={{ $('Webhook').item.json.body.resume_text }}"
+            },
+            {
+              "fieldId": "job_description",
+              "fieldValue": "={{ $('Webhook').item.json.body.job_description }}"
+            },
+            {
+              "fieldId": "ats_score",
+              "fieldValue": "={{ JSON.parse($('AI Agent').item.json.output).score }}"
+            },
+            {
+              "fieldId": "feedback",
+              "fieldValue": "={{ $('AI Agent').item.json.output }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        800,
+        0
+      ],
+      "id": "20d3f08e-b4fa-408a-ae14-9b91de45e513",
+      "name": "Create a row",
+      "credentials": {
+        "supabaseApi": {
+          "id": "iiSMhYZTKSJKhhYi",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const aiOutput = $('AI Agent').item.json.output;\nconst webhookData = $('Webhook').item.json;\n\n// AI output parse చేయి\nlet parsed;\ntry {\n  // Clean the output (remove markdown if any)\n  const cleaned = aiOutput.replace(/```json/g, '').replace(/```/g, '').trim();\n  parsed = JSON.parse(cleaned);\n} catch(e) {\n  parsed = {\n    score: 0,\n    keyword_match: 0,\n    format_score: 0,\n    experience_match: 0,\n    missing_keywords: [],\n    strengths: [],\n    improvements: [],\n    summary: \"Parse error\"\n  };\n}\n\nreturn {\n  resume_text: webhookData.resume_text,\n  job_description: webhookData.job_description,\n  ats_score: parsed.score,\n  feedback: JSON.stringify(parsed)\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        576,
+        0
+      ],
+      "id": "11de543d-cee7-4710-bf8b-3964ca0ac9b6",
+      "name": "Code in JavaScript"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenRouter Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create a row": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Create a row",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "823d04a1-baa6-466d-9e6d-0cf9d7de79e8",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "938ae7ff4c30418b95c98090b07ccdb9f1b0e64c4c82ecfd31dbf113fa317ece"
+  },
+  "id": "63IWEN4bGfpFVt41",
+  "tags": []
+}
