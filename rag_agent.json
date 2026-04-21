@@ -1,0 +1,476 @@
+{
+  "name": "rag_agent",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "upload-document",
+        "responseMode": "responseNode",
+        "options": {
+          "allowedOrigins": "*"
+        }
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "74c69116-7a5b-477c-b680-cd33960970e0",
+      "name": "Webhook",
+      "webhookId": "4ca7d0ff-74fc-46f9-9b4d-42d6c5bac025"
+    },
+    {
+      "parameters": {
+        "jsCode": "// // Auto-detect where the data is coming from\n// const raw = $input.first().json;\n// const body = raw.body || raw;\n\n// const documentName = body.documentName || body.document_name || 'Untitled';\n// const fullText = body.documentContent || body.document_content || body.content || '';\n\n// // Debug log — check browser console\n// console.log('documentName:', documentName);\n// console.log('fullText length:', fullText.length);\n// console.log('raw keys:', Object.keys(raw));\n\n// const chunkSize = 200;\n// const overlap = 20;\n\n// function chunkText(text) {\n//   const words = text.split(' ');\n//   const chunks = [];\n//   for (let i = 0; i < words.length; i += (chunkSize - overlap)) {\n//     const chunk = words.slice(i, i + chunkSize).join(' ');\n//     if (chunk.trim().length > 0) chunks.push(chunk);\n//   }\n//   return chunks;\n// }\n\n// const chunks = chunkText(fullText);\n\n// if (chunks.length === 0) {\n//   throw new Error(`No chunks generated. fullText was empty or undefined. Raw keys: ${Object.keys(raw).join(', ')}`);\n// }\n\n// return chunks.map((chunk, index) => ({\n//   json: {\n//     documentName,\n//     chunkIndex: index,\n//     content: chunk.trim(),\n//     totalChunks: chunks.length\n//   }\n// }));\n\nconst raw = $input.first().json;\n\n// Handle all possible webhook structures\nconst documentName = raw?.body?.documentName \n  || raw?.documentName \n  || 'Untitled';\n\nconst fullText = raw?.body?.documentContent \n  || raw?.documentContent \n  || raw?.body?.content\n  || raw?.content\n  || '';\n\nconst chunkSize = 200;\nconst overlap = 20;\n\nfunction chunkText(text) {\n  const words = text.split(' ');\n  const chunks = [];\n  for (let i = 0; i < words.length; i += (chunkSize - overlap)) {\n    const chunk = words.slice(i, i + chunkSize).join(' ');\n    if (chunk.trim().length > 0) chunks.push(chunk);\n  }\n  return chunks;\n}\n\nconst chunks = chunkText(fullText);\n\nreturn chunks.map((chunk, index) => ({\n  json: {\n    documentName,\n    chunkIndex: index,\n    content: chunk.trim(),\n    totalChunks: chunks.length\n  }\n}));"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        224,
+        0
+      ],
+      "id": "d1d5e215-4a9d-4180-bfa7-6842bf416e92",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://openrouter.ai/api/v1/embeddings",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Bearer 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"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ model: \"openai/text-embedding-3-small\", input: $json.content }) }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        448,
+        0
+      ],
+      "id": "4a936e8a-b325-42d5-9b1a-a2f676b2f230",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "{\n  \"success\": true,\n  \"message\": \"Document uploaded successfully!\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        1120,
+        0
+      ],
+      "id": "864c32ab-0bb3-4339-9416-28b3741a663c",
+      "name": "Respond to Webhook"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "chat",
+        "responseMode": "responseNode",
+        "options": {
+          "allowedOrigins": "*"
+        }
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        224
+      ],
+      "id": "d41a1846-2cba-4a6e-899e-94ebef29568b",
+      "name": "Webhook1",
+      "webhookId": "79fd02ab-4693-4520-8d98-64d719b10c9e"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://openrouter.ai/api/v1/embeddings",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer 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"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"model\": \"openai/text-embedding-3-small\",\n  \"input\": \"={{ $json.body.question }}\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        224,
+        224
+      ],
+      "id": "513e5177-be78-422c-8340-e9aefdccaaea",
+      "name": "HTTP Request1"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://fxerlkwkmgtfucvajafj.supabase.co/rest/v1/rpc/match_documents",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ4ZXJsa3drbWd0ZnVjdmFqYWZqIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3NjY2MDc4MCwiZXhwIjoyMDkyMjM2NzgwfQ.SXw4FfSO1m1qcqXUJQV83k9kHebyAHDJJkoWuJEPuMo"
+            },
+            {
+              "name": "apikey",
+              "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ4ZXJsa3drbWd0ZnVjdmFqYWZqIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3NjY2MDc4MCwiZXhwIjoyMDkyMjM2NzgwfQ.SXw4FfSO1m1qcqXUJQV83k9kHebyAHDJJkoWuJEPuMo"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "query_embedding",
+              "value": "={{ $json.query_embedding }}"
+            },
+            {
+              "name": "match_threshold",
+              "value": "={{ $json.match_threshold }}"
+            },
+            {
+              "name": "match_count",
+              "value": "={{ $json.match_count }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        672,
+        224
+      ],
+      "id": "6722df7b-4604-45d7-a01b-76f946845120",
+      "name": "HTTP Request2"
+    },
+    {
+      "parameters": {
+        "jsCode": "const searchResults = $input.all();\n\n// Webhook data అన్ని ways లో try చేయి\nconst webhookData = $('Webhook1').first().json;\nconst question = webhookData.body?.question || \n                 webhookData.question || \n                 \"What is AI?\";\n\nconst context = searchResults\n  .map(item => item.json.content)\n  .join(' ');\n\nconst prompt = \"You are a helpful assistant. Answer based ONLY on this context: \" + \n  context + \" Question: \" + question;\n\nreturn [{\n  json: { prompt, question, context }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        896,
+        224
+      ],
+      "id": "b6d2b4fe-ff78-4563-b49b-85d7a0cc4721",
+      "name": "Code in JavaScript1"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://openrouter.ai/api/v1/chat/completions",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer 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"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify($json.requestBody) }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        1344,
+        224
+      ],
+      "id": "85d032f7-8580-4a08-98a1-c40849e47227",
+      "name": "HTTP Request3"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({ \"answer\": $json.choices[0].message.content, \"success\": true }) }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        1568,
+        224
+      ],
+      "id": "5d74f0eb-ae53-4451-b34f-df894a563029",
+      "name": "Respond to Webhook1"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://fxerlkwkmgtfucvajafj.supabase.co/rest/v1/document_chunks",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ4ZXJsa3drbWd0ZnVjdmFqYWZqIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3NjY2MDc4MCwiZXhwIjoyMDkyMjM2NzgwfQ.SXw4FfSO1m1qcqXUJQV83k9kHebyAHDJJkoWuJEPuMo"
+            },
+            {
+              "name": "apikey",
+              "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ4ZXJsa3drbWd0ZnVjdmFqYWZqIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3NjY2MDc4MCwiZXhwIjoyMDkyMjM2NzgwfQ.SXw4FfSO1m1qcqXUJQV83k9kHebyAHDJJkoWuJEPuMo"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "Prefer",
+              "value": "return=minimal"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "content",
+              "value": "={{ $json.body.content }}"
+            },
+            {
+              "name": "embedding",
+              "value": "={{ $json.body.embedding }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        896,
+        0
+      ],
+      "id": "559f1d27-42ec-4b3b-a0cb-c29173ea6f26",
+      "name": "HTTP Request4"
+    },
+    {
+      "parameters": {
+        "jsCode": "const embedding = $input.first().json.data[0].embedding;\nconst content = $('Code in JavaScript').first().json.content;\n\n// Content ని JSON safe చేయి\nconst safeContent = content\n  .replace(/\\\\/g, '\\\\\\\\')\n  .replace(/\"/g, '\\\\\"')\n  .replace(/\\n/g, ' ')\n  .replace(/\\r/g, ' ')\n  .replace(/\\t/g, ' ');\n\nreturn [{\n  json: {\n    body: {\n      content: safeContent,\n      embedding: embedding\n    }\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        672,
+        0
+      ],
+      "id": "15461d81-8335-4250-84c9-bd3ed9b35192",
+      "name": "Code in JavaScript2"
+    },
+    {
+      "parameters": {
+        "jsCode": "const embedding = $input.first().json.data[0].embedding;\n\nreturn [{\n  json: {\n    query_embedding: embedding,\n    match_threshold: 0.1,\n    match_count: 5\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        448,
+        224
+      ],
+      "id": "900afff0-1d55-400d-bb9b-55380a4620a2",
+      "name": "Code in JavaScript3"
+    },
+    {
+      "parameters": {
+        "jsCode": "const prompt = $input.first().json.prompt;\nconst question = $input.first().json.question;\n\nreturn [{\n  json: {\n    requestBody: {\n     model: \"nvidia/nemotron-3-super-120b-a12b:free\",\n      messages: [\n        {\n          role: \"user\",\n          content: prompt\n        }\n      ],\n      max_tokens: 1000\n    }\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1120,
+        224
+      ],
+      "id": "5164de81-17aa-4b18-90c8-f3abd8d712f2",
+      "name": "Code in JavaScript4"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook1": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request1": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request2": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript1": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request3": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request4": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript2": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript3": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript4": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "ce3b0905-7c78-4324-bd7b-3818584ff74e",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "938ae7ff4c30418b95c98090b07ccdb9f1b0e64c4c82ecfd31dbf113fa317ece"
+  },
+  "id": "UO0qL0A7CvOj7onm",
+  "tags": []
+}
